@@ -139,14 +139,14 @@ param = {'booster': 'gbtree',
               'gamma': 0.1,
               'lambda': 1,
               'colsample_bylevel': 0.7,
-              'colsample_bytree': 0.8,
+              'colsample_bytree': 0.7,
               'subsample': 0.9,
               'scale_pos_weight': 1}
 
 dtrain = xgb.DMatrix(train.drop(['客户号', '卡号', 'label'], axis=1), label=train['label'])
 dtest = xgb.DMatrix(test.drop(['客户号', '卡号'], axis=1))
-
-bst = xgb.train(param,dtrain,num_boost_round=1750)
+watchlist = [(dtrain, 'train')]
+bst = xgb.train(param,dtrain,num_boost_round=1750, evals=watchlist)
 predict = bst.predict(dtest)
 predict = pd.DataFrame(predict, columns=['target'])
 result = pd.concat([test[['卡号']], predict], axis=1)
