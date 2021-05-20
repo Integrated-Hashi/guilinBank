@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon May 17 17:29:55 2021
+Created on Sat May 15 22:01:01 2021
 
 @author: integrated_hashi
 """
@@ -17,8 +17,8 @@ for i in range(12):
 acct_test = pd.read_csv("/data/acct_test.csv",names=name, skiprows=1)
 name.append('label')
 acct_train = pd.read_csv("/data/acct_train.csv",names=name, skiprows=1)
-acct_train.drop(['acct_3', 'acct_4', 'acct_5'], axis = 1,inplace=True)
-acct_test.drop(['acct_3', 'acct_4', 'acct_5'], axis = 1,inplace=True)
+acct_train.drop(['acct_3', 'acct_4', 'acct_5', 'acct_9'], axis = 1,inplace=True)
+acct_test.drop(['acct_3', 'acct_4', 'acct_5', 'acct_9'], axis = 1,inplace=True)
 
 pivot = pd.pivot_table(acct_train, index='acct_1', values='卡号', aggfunc=lambda x: len(set(x)))   
 pivot = pd.DataFrame(pivot).rename(columns={'卡号': 'acct1_differ_kahao_cnt'}).reset_index()   
@@ -38,6 +38,14 @@ cust_train.drop(['cust_2', 'cust_3', 'cust_4', 'cust_5', 'cust_6', 'cust_7', 'cu
                 axis = 1, inplace=True)
 cust_test.drop(['cust_2', 'cust_3', 'cust_4', 'cust_5', 'cust_6', 'cust_7', 'cust_10'], 
                axis = 1, inplace=True)
+
+pivot = pd.pivot_table(cust_train, index='cust_11', values='客户号', aggfunc=lambda x: len(set(x)))   
+pivot = pd.DataFrame(pivot).rename(columns={'客户号': 'cust_differ_kahao_cnt'}).reset_index()   
+cust_train = pd.merge(cust_train, pivot, on='cust_11', how='left') 
+
+pivot = pd.pivot_table(cust_test, index='cust_11', values='客户号', aggfunc=lambda x: len(set(x)))   
+pivot = pd.DataFrame(pivot).rename(columns={'客户号': 'cust_differ_kahao_cnt'}).reset_index()   
+cust_test = pd.merge(cust_test, pivot, on='cust_11', how='left') 
 
 train = pd.merge(acct_train,cust_train,on='客户号')
 test = pd.merge(acct_test,cust_test,on='客户号')
@@ -95,15 +103,15 @@ cards_test['year2'] =cards_test['date_6'].dt.year.fillna(0).astype("int")
 cards_test['month2'] =cards_test['date_6'].dt.month.fillna(0).astype("int")
 cards_test['day2'] =cards_test['date_6'].dt.day.fillna(0).astype("int")
 
-# cards_train['week1'] = cards_train['date_4'].map(lambda x: x.weekday()) 
-# cards_train['is_weekend1'] = cards_train['week1'].map(lambda x: 1 if x == 5 or x == 6 else 0)
-# cards_train['week2'] = cards_train['date_6'].map(lambda x: x.weekday()) 
-# cards_train['is_weekend2'] = cards_train['week2'].map(lambda x: 1 if x == 5 or x == 6 else 0)
+#cards_train['week1'] = cards_train['date_4'].map(lambda x: x.weekday()) 
+#cards_train['is_weekend1'] = cards_train['week1'].map(lambda x: 1 if x == 5 or x == 6 else 0)
+#cards_train['week2'] = cards_train['date_6'].map(lambda x: x.weekday()) 
+#cards_train['is_weekend2'] = cards_train['week2'].map(lambda x: 0 if x == 5 or x == 6 else 0)
 
-# cards_test['week1'] = cards_test['date_4'].map(lambda x: x.weekday()) 
-# cards_test['is_weekend1'] = cards_test['week1'].map(lambda x: 1 if x == 5 or x == 6 else 0)
-# cards_test['week2'] = cards_test['date_6'].map(lambda x: x.weekday()) 
-# cards_test['is_weekend2'] = cards_test['week2'].map(lambda x: 1 if x == 5 or x == 6 else 0)
+#cards_test['week1'] = cards_test['date_4'].map(lambda x: x.weekday()) 
+#cards_test['is_weekend1'] = cards_test['week1'].map(lambda x: 1 if x == 5 or x == 6 else 0)
+#cards_test['week2'] = cards_test['date_6'].map(lambda x: x.weekday()) 
+#cards_test['is_weekend2'] = cards_test['week2'].map(lambda x: 1 if x == 5 or x == 6 else 0)
 
 cards_train.drop(['date_4', 'date_6'], 
                 axis = 1, inplace=True)
@@ -150,5 +158,12 @@ bst = xgb.train(param,dtrain,num_boost_round=2000, evals=watchlist)
 predict = bst.predict(dtest)
 predict = pd.DataFrame(predict, columns=['target'])
 result = pd.concat([test[['卡号']], predict], axis=1)
+
+feat_importance = pd.DataFrame(columns=['feature_name', 'importance'])
+feat_importance['feature_name'] = bst.get_score().keys()
+feat_importance['importance'] = bst.get_score().values()
+feat_importance.sort_values(['importance'], ascending=False, inplace=True)
+#result['target'] = result['target'].map(lambda x: 0 if x<0.01 else x)
 print(result)
+print(feat_importance)
 result.to_csv('./pre_result.csv',index=False)
