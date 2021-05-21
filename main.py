@@ -40,11 +40,11 @@ cust_test.drop(['cust_2', 'cust_3', 'cust_4', 'cust_5', 'cust_6', 'cust_7', 'cus
                axis = 1, inplace=True)
 
 pivot = pd.pivot_table(cust_train, index='cust_11', values='客户号', aggfunc=lambda x: len(set(x)))   
-pivot = pd.DataFrame(pivot).rename(columns={'客户号': 'cust_differ_kahao_cnt'}).reset_index()   
+pivot = pd.DataFrame(pivot).rename(columns={'客户号': 'cust11_differ_kahao_cnt'}).reset_index()   
 cust_train = pd.merge(cust_train, pivot, on='cust_11', how='left') 
 
 pivot = pd.pivot_table(cust_test, index='cust_11', values='客户号', aggfunc=lambda x: len(set(x)))   
-pivot = pd.DataFrame(pivot).rename(columns={'客户号': 'cust_differ_kahao_cnt'}).reset_index()   
+pivot = pd.DataFrame(pivot).rename(columns={'客户号': 'cust11_differ_kahao_cnt'}).reset_index()   
 cust_test = pd.merge(cust_test, pivot, on='cust_11', how='left') 
 
 train = pd.merge(acct_train,cust_train,on='客户号')
@@ -59,13 +59,11 @@ tran_test = pd.read_csv("/data/tran_test.csv",names=name, skiprows=1)
 
 le = LabelEncoder()
 tran_19 = pd.concat([tran_train['tran_19'],tran_test['tran_19']])
-le.fit(tran_19)
+tran_20 = pd.concat([tran_train['tran_20'],tran_test['tran_20']])
+tran_1920 = pd.concat([tran_19, tran_20])
+le.fit(tran_1920)
 tran_train['tran_19']=le.transform(tran_train['tran_19'])
 tran_test['tran_19']=le.transform(tran_test['tran_19'])
-
-le = LabelEncoder()
-tran_20 = pd.concat([tran_train['tran_20'],tran_test['tran_20']])
-le.fit(tran_20)
 tran_train['tran_20']=le.transform(tran_train['tran_20'])
 tran_test['tran_20']=le.transform(tran_test['tran_20'])
 
@@ -120,18 +118,84 @@ cards_test.drop(['date_4', 'date_6'],
 
 le = LabelEncoder()
 cards_4 = pd.concat([cards_train['cards_4'],cards_test['cards_4']])
-le.fit(cards_4)
+cards_6 = pd.concat([cards_train['cards_6'],cards_test['cards_6']])
+cards_46 = pd.concat([cards_4, cards_6])
+le.fit(cards_46)
 cards_train['cards_4']=le.transform(cards_train['cards_4'])
 cards_test['cards_4']=le.transform(cards_test['cards_4'])
-
-le = LabelEncoder()
-cards_6 = pd.concat([cards_train['cards_6'],cards_test['cards_6']])
-le.fit(cards_6)
 cards_train['cards_6']=le.transform(cards_train['cards_6'])
 cards_test['cards_6']=le.transform(cards_test['cards_6'])
 
+pivot = pd.pivot_table(cards_train, index='cards_4', values='卡号', aggfunc=lambda x: len(set(x)))   
+pivot = pd.DataFrame(pivot).rename(columns={'卡号': 'cards4_differ_kahao_cnt'}).reset_index()   
+cards_train = pd.merge(cards_train, pivot, on='cards_4', how='left') 
+
+pivot = pd.pivot_table(cards_test, index='cards_4', values='卡号', aggfunc=lambda x: len(set(x)))   
+pivot = pd.DataFrame(pivot).rename(columns={'卡号': 'cards4_differ_kahao_cnt'}).reset_index()   
+cards_test = pd.merge(cards_test, pivot, on='cards_4', how='left') 
+
 train=pd.merge(train,cards_train,on='卡号')
 test=pd.merge(test,cards_test,on='卡号')
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+cat = ['acct_0', 'tran_19', 'tran_20']
+num = ['acct_11','tran_0', 'cust_11','tran_0', 'tran_1', 
+       'tran_6', 'tran_7', 'tran_16', 'tran_23', 'tran_24']
+for i in cat:
+    for j in num:
+        tmp_mean = train.groupby(i)[j].mean().reset_index()
+        tmp_mean.rename(columns={j:i+'_'+j+'_mean'},inplace=True)
+        train = pd.merge(train, tmp_mean, on=i, how='left') 
+
+        tmp_median = train.groupby(i)[j].median().reset_index()
+        tmp_median.rename(columns={j:i+'_'+j+'_median'},inplace=True)
+        train = pd.merge(train, tmp_median, on=i, how='left')
+
+        tmp_std = train.groupby(i)[j].std().reset_index()
+        tmp_std.rename(columns={j:i+'_'+j+'_std'},inplace=True)
+        train = pd.merge(train, tmp_std, on=i, how='left')
+
+        tmp_minus = tmp_median 
+        tmp_minus[i+'_'+j+'_median'] = abs(tmp_median[i+'_'+j+'_median'] - tmp_mean[i+'_'+j+'_mean'])
+        tmp_minus.rename(columns={i+'_'+j+'_median':i+'_'+j+'_minus'},inplace=True)
+        train = pd.merge(train, tmp_minus, on=i, how='left')
+
+        tmp_mean = train.groupby(i)[j].mean().reset_index()
+        tmp_mean.rename(columns={j:i+'_'+j+'_mean'},inplace=True) 
+        tmp_median = train.groupby(i)[j].median().reset_index()
+        tmp_median.rename(columns={j:i+'_'+j+'_median'},inplace=True)
+        tmp_divde = tmp_median
+        tmp_divde[i+'_'+j+'_median'] = tmp_median[i+'_'+j+'_median'] / tmp_mean[i+'_'+j+'_mean']
+        tmp_divde.rename(columns={i+'_'+j+'_median':i+'_'+j+'_divde'},inplace=True)
+        train = pd.merge(train, tmp_divde, on=i, how='left')
+
+for i in cat:
+    for j in num:
+        tmp_mean = test.groupby(i)[j].mean().reset_index()
+        tmp_mean.rename(columns={j:i+'_'+j+'_mean'},inplace=True)
+        test = pd.merge(test, tmp_mean, on=i, how='left') 
+
+        tmp_median = test.groupby(i)[j].median().reset_index()
+        tmp_median.rename(columns={j:i+'_'+j+'_median'},inplace=True)
+        test = pd.merge(test, tmp_median, on=i, how='left')
+
+        tmp_std = test.groupby(i)[j].std().reset_index()
+        tmp_std.rename(columns={j:i+'_'+j+'_std'},inplace=True)
+        test = pd.merge(test, tmp_std, on=i, how='left')
+
+        tmp_minus = tmp_median 
+        tmp_minus[i+'_'+j+'_median'] = abs(tmp_median[i+'_'+j+'_median'] - tmp_mean[i+'_'+j+'_mean'])
+        tmp_minus.rename(columns={i+'_'+j+'_median':i+'_'+j+'_minus'},inplace=True)
+        test = pd.merge(test, tmp_minus, on=i, how='left')
+
+        tmp_mean = test.groupby(i)[j].mean().reset_index()
+        tmp_mean.rename(columns={j:i+'_'+j+'_mean'},inplace=True) 
+        tmp_median = test.groupby(i)[j].median().reset_index()
+        tmp_median.rename(columns={j:i+'_'+j+'_median'},inplace=True)
+        tmp_divde = tmp_median
+        tmp_divde[i+'_'+j+'_median'] = tmp_median[i+'_'+j+'_median'] / tmp_mean[i+'_'+j+'_mean']
+        tmp_divde.rename(columns={i+'_'+j+'_median':i+'_'+j+'_divde'},inplace=True)
+        test = pd.merge(test, tmp_divde, on=i, how='left')
 
 train.fillna(-1, inplace = True)
 test.fillna(-1, inplace = True)
@@ -154,7 +218,7 @@ param = {'booster': 'gbtree',
 dtrain = xgb.DMatrix(train.drop(['客户号', '卡号', 'label'], axis=1), label=train['label'])
 dtest = xgb.DMatrix(test.drop(['客户号', '卡号'], axis=1))
 watchlist = [(dtrain, 'train')]
-bst = xgb.train(param,dtrain,num_boost_round=2000, evals=watchlist)
+bst = xgb.train(param,dtrain,num_boost_round=1500, evals=watchlist)
 predict = bst.predict(dtest)
 predict = pd.DataFrame(predict, columns=['target'])
 result = pd.concat([test[['卡号']], predict], axis=1)
