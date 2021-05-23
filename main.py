@@ -28,6 +28,14 @@ pivot = pd.pivot_table(acct_test, index='acct_1', values='卡号', aggfunc=lambd
 pivot = pd.DataFrame(pivot).rename(columns={'卡号': 'acct1_differ_kahao_cnt'}).reset_index()   
 acct_test = pd.merge(acct_test, pivot, on='acct_1', how='left') 
 
+pivot = pd.pivot_table(acct_train, index='acct_0', values='acct_11', aggfunc=lambda x: len(set(x)))   
+pivot = pd.DataFrame(pivot).rename(columns={'acct_11': 'acct_0_differ_acct_11_cnt'}).reset_index()   
+acct_train = pd.merge(acct_train, pivot, on='acct_0', how='left') 
+
+pivot = pd.pivot_table(acct_test, index='acct_0', values='acct_11', aggfunc=lambda x: len(set(x)))   
+pivot = pd.DataFrame(pivot).rename(columns={'acct_11': 'acct_0_differ_acct_11_cnt'}).reset_index()   
+acct_test = pd.merge(acct_test, pivot, on='acct_0', how='left') 
+
 key = 'cust_'
 name = ['客户号']
 for i in range(12):
@@ -66,6 +74,10 @@ tran_train['tran_19']=le.transform(tran_train['tran_19'])
 tran_test['tran_19']=le.transform(tran_test['tran_19'])
 tran_train['tran_20']=le.transform(tran_train['tran_20'])
 tran_test['tran_20']=le.transform(tran_test['tran_20'])
+
+
+tran_train['tran_0_divide_tran_23'] = tran_train['tran_0']*tran_train['tran_23']
+tran_test['tran_0_divide_tran_23'] = tran_test['tran_0']*tran_test['tran_23']
 
 train=pd.merge(train,tran_train,on='卡号')
 test=pd.merge(test,tran_test,on='卡号')
@@ -134,12 +146,20 @@ pivot = pd.pivot_table(cards_test, index='cards_4', values='卡号', aggfunc=lam
 pivot = pd.DataFrame(pivot).rename(columns={'卡号': 'cards4_differ_kahao_cnt'}).reset_index()   
 cards_test = pd.merge(cards_test, pivot, on='cards_4', how='left') 
 
+pivot = pd.pivot_table(cards_train, index='cards_3', values='卡号', aggfunc=lambda x: len(set(x)))   
+pivot = pd.DataFrame(pivot).rename(columns={'卡号': 'cards3_differ_kahao_cnt'}).reset_index()   
+cards_train = pd.merge(cards_train, pivot, on='cards_3', how='left') 
+
+pivot = pd.pivot_table(cards_test, index='cards_3', values='卡号', aggfunc=lambda x: len(set(x)))   
+pivot = pd.DataFrame(pivot).rename(columns={'卡号': 'cards3_differ_kahao_cnt'}).reset_index()   
+cards_test = pd.merge(cards_test, pivot, on='cards_3', how='left') 
+
 train=pd.merge(train,cards_train,on='卡号')
 test=pd.merge(test,cards_test,on='卡号')
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 cat = ['acct_0', 'tran_19', 'tran_20']
-num = ['acct_11','tran_0', 'cust_11','tran_0', 'tran_1', 
+num = ['acct_11','tran_0', 'cust_11', 'tran_1', 'tran_2',
        'tran_6', 'tran_7', 'tran_16', 'tran_23', 'tran_24']
 for i in cat:
     for j in num:
