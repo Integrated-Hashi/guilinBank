@@ -75,9 +75,23 @@ tran_test['tran_19']=le.transform(tran_test['tran_19'])
 tran_train['tran_20']=le.transform(tran_train['tran_20'])
 tran_test['tran_20']=le.transform(tran_test['tran_20'])
 
+tran_train['tran_0_plus_tran_18'] = tran_train['tran_0']*tran_train['tran_18']
+tran_test['tran_0_plus_tran_18'] = tran_test['tran_0']*tran_test['tran_18']
 
-tran_train['tran_0_divide_tran_23'] = tran_train['tran_0']*tran_train['tran_23']
-tran_test['tran_0_divide_tran_23'] = tran_test['tran_0']*tran_test['tran_23']
+tran_train['tran_0_minus_tran_18'] = tran_train['tran_0']-tran_train['tran_18']
+tran_test['tran_0_minus_tran_18'] = tran_test['tran_0']-tran_test['tran_18']
+
+tran_train['tran_1_minus_tran_6'] = tran_train['tran_1']/tran_train['tran_6']
+tran_test['tran_1_minus_tran_6'] = tran_test['tran_1']/tran_test['tran_6']
+
+tran_train['tran_0_plus_tran_23'] = tran_train['tran_0']*tran_train['tran_23']
+tran_test['tran_0_plus_tran_23'] = tran_test['tran_0']*tran_test['tran_23']
+
+tran_train['tran_0_plus_tran_24'] = tran_train['tran_0']*tran_train['tran_24']
+tran_test['tran_0_plus_tran_24'] = tran_test['tran_0']*tran_test['tran_24']
+
+tran_train['tran_24_plus_tran_23'] = tran_train['tran_24']*tran_train['tran_23']
+tran_test['tran_24_plus_tran_23'] = tran_test['tran_24']*tran_test['tran_23']
 
 train=pd.merge(train,tran_train,on='卡号')
 test=pd.merge(test,tran_test,on='卡号')
