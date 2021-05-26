@@ -241,8 +241,8 @@ for i in cat:
         tmp_divde.rename(columns={i+'_'+j+'_median':i+'_'+j+'_divde'},inplace=True)
         test = pd.merge(test, tmp_divde, on=i, how='left')
 
-train.fillna(-1, inplace = True)
-test.fillna(-1, inplace = True)
+train.fillna(0, inplace = True)
+test.fillna(0, inplace = True)
 
 train_label = train['label'].tolist()
 
@@ -271,7 +271,6 @@ feat_importance = pd.DataFrame(columns=['feature_name', 'importance'])
 feat_importance['feature_name'] = bst.get_score().keys()
 feat_importance['importance'] = bst.get_score().values()
 feat_importance.sort_values(['importance'], ascending=False, inplace=True)
-#result['target'] = result['target'].map(lambda x: 0 if x<0.01 else x)
 print(result)
 print(feat_importance)
 result.to_csv('./pre_result.csv',index=False)
