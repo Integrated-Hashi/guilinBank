@@ -189,6 +189,11 @@ for i in cat:
         tmp_std.rename(columns={j:i+'_'+j+'_std'},inplace=True)
         train = pd.merge(train, tmp_std, on=i, how='left')
 
+        mean1=train.groupby(i)[j].transform('mean')
+        median1=train.groupby(i)[j].transform('median')
+        train[i+'/mean_'+j] = train[j]/(mean1+1e-5)
+        train[i+'/median_'+j] = train[j]/(median1+1e-5)
+        
         tmp_minus = tmp_median 
         tmp_minus[i+'_'+j+'_median'] = abs(tmp_median[i+'_'+j+'_median'] - tmp_mean[i+'_'+j+'_mean'])
         tmp_minus.rename(columns={i+'_'+j+'_median':i+'_'+j+'_minus'},inplace=True)
@@ -216,6 +221,11 @@ for i in cat:
         tmp_std = test.groupby(i)[j].std().reset_index()
         tmp_std.rename(columns={j:i+'_'+j+'_std'},inplace=True)
         test = pd.merge(test, tmp_std, on=i, how='left')
+    
+        mean1=test.groupby(i)[j].transform('mean')
+        median1=test.groupby(i)[j].transform('median')
+        test[i+'/mean_'+j] = test[j]/(mean1+1e-5)
+        test[i+'/median_'+j] = test[j]/(median1+1e-5)
 
         tmp_minus = tmp_median 
         tmp_minus[i+'_'+j+'_median'] = abs(tmp_median[i+'_'+j+'_median'] - tmp_mean[i+'_'+j+'_mean'])
