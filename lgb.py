@@ -148,7 +148,7 @@ model = lgbm.LGBMRegressor(
     reg_alpha=0.0,
     reg_lambda=0.0,
     random_state=None,
-    silent=True
+    silent=False
 )
 
 model.fit(train.drop(['客户号', '卡号', 'label'], axis=1), train['label'])
